@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦖 DinoDesk (Your Dino Personal Assistant) 🌿</title>
+    <style>
+        /* --- Root Variables for Cute Dino Theme --- */
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Balsamiq+Sans:wght@400;700&display=swap');
+
+        :root {
+            --font-main: 'Balsamiq Sans', cursive; /* Playful, friendly handwritten style */
+            --font-secondary: 'Fredoka One', cursive; /* Bold, blocky, impactful for titles */
+            --bg-main: #ffebee; /* Soft, light pink (Misty Rose variant) */
+            --bg-section: #fff8e1; /* Pale yellow (Creamy Lemon) */
+            --text-dark: #4a148c; /* Deep purple (Amethyst) */
+            --text-light: #ce93d8; /* Muted lavender (Light Amethyst) */
+            --accent-primary: #ffcdb2; /* Light peach (Peach Puff) */
+            --accent-secondary: #f0f4c3; /* Soft lime (Pale Green) */
+            --accent-highlight: #e1bee7; /* Light lilac (Lavender Bliss) */
+            --color-success: #81c784; /* Soft green (Minty Delight) */
+            --color-danger: #e57373; /* Gentle red (Rosy Coral) */
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* Soft, subtle shadow */
+            --border-radius: 25px; /* Rounded corners for all elements */
+        }
+
+        /* --- Global Styles --- */
+        * {
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+
+        body {
+            font-family: var(--font-main); /* Apply main font */
+            margin: 0;
+            padding: 2.5rem; /* Overall padding around the content */
+            background-color: var(--bg-main); /* Main background color */
+            color: var(--text-dark); /* Default text color */
+            min-height: 100vh; /* Full viewport height */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center content horizontally */
+            position: relative; /* For positioning pseudo-elements */
+            overflow-x: hidden; /* Hide horizontal scrollbar caused by large background elements */
+        }
+
+        /* --- T-Rex Background Pseudo-element --- */
+        body::before {
+            content: ''; /* Required for pseudo-elements */
+            position: fixed; /* Stays in place when scrolling */
+            top: 50%; /* Vertical center */
+            left: -100px; /* Position off-screen to the left for a large effect */
+            transform: translateY(-50%) rotate(-10deg); /* Center vertically and add slight rotation */
+            width: 1000px; /* Massive T-Rex head size */
+            height: 1000px; /* Massive T-Rex head size */
+            /* Using the cute cartoon T-Rex image URL */
+            background-image: url('http://googleusercontent.com/image_generation_content/2');
+            background-size: contain; /* Ensure the image fits within the bounds */
+            background-repeat: no-repeat; /* Don't repeat the image */
+            opacity: 0.2; /* Make it subtle so it doesn't overpower the content */
+            z-index: -1; /* Send it behind all other content */
+            /* Adjust color filter to match cute theme */
+            filter: grayscale(30%) brightness(110%) saturate(180%);
+        }
+
+        /* --- Main Content Layout --- */
+        .main-container {
+            display: grid;
+            /* Responsive grid: auto-fit creates columns, minmax ensures responsiveness */
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem; /* Space between grid items */
+            max-width: 1600px; /* Maximum width for the content area */
+            width: 100%; /* Full width within max-width */
+            margin-top: 2.5rem; /* Space from the calendar/time */
+            position: relative; /* Ensures it stays above the pseudo-elements */
+            z-index: 1; /* Keep content above background */
+        }
+
+        /* --- Main Title Styling --- */
+        .main-title {
+            grid-column: 1 / -1; /* Make the title span all columns in the grid */
+            text-align: center;
+            font-family: var(--font-secondary); /* Use secondary font for emphasis */
+            color: var(--accent-primary); /* Primary accent color */
+            text-shadow: 6px 6px 0px var(--text-dark),
+                         8px 8px 0px var(--color-success);
+            margin-bottom: 3rem; /* Space below the title */
+            letter-spacing: 4px; /* Wider letter spacing */
+            line-height: 1.1; /* Tighter line height */
+        }
+
+        .main-title .dino-name {
+            font-size: 4.5rem; /* Bigger font for DinoDesk */
+            display: block; /* Ensures it's on its own line */
+        }
+
+        .main-title .assistant-tagline {
+            font-size: 2rem; /* Smaller font for tagline */
+            display: block; /* Ensures it's on its own line */
+            margin-top: 0.5rem; /* Space between the two lines */
+            color: var(--text-dark); /* Darker color for the tagline */
+            text-shadow: none; /* Remove shadow for tagline */
+            letter-spacing: 2px;
+        }
+
+
+        /* --- Section Box Styling (Task, Budget, Notes Modules) --- */
+        .section {
+            background: var(--bg-section); /* Section background color */
+            padding: 2.5rem; /* Internal padding */
+            border-radius: var(--border-radius); /* Rounded corners */
+            box-shadow: var(--shadow); /* Soft shadow */
+            display: flex;
+            flex-direction: column; /* Stack contents vertically */
+            border: 4px solid var(--accent-secondary); /* Border color */
+        }
+
+        h2 {
+            font-family: var(--font-secondary); /* Secondary font for section titles */
+            margin-top: 0;
+            color: var(--text-dark); /* Dark text color */
+            border-bottom: 5px solid var(--text-light); /* Decorative bottom border */
+            padding-bottom: 1.2rem; /* Spacing below the border */
+            margin-bottom: 2rem; /* Spacing below the title */
+            font-size: 2.2rem; /* Large font size for titles */
+            text-align: center;
+            letter-spacing: 1px; /* Slight letter spacing */
+        }
+
+        /* --- Form Elements Styling --- */
+        input, textarea, button, select {
+            font-family: var(--font-main); /* Main font for form elements */
+            font-size: 1.15rem; /* Larger font size */
+            padding: 1.2rem; /* Generous padding */
+            margin-bottom: 1.2rem; /* Space below each element */
+            border-radius: 18px; /* More rounded input fields */
+            border: 2px solid var(--text-light); /* Light border */
+            width: 100%; /* Full width */
+            transition: all 0.3s ease; /* Smooth transitions for hover/focus */
+            background-color: #f8fcf8; /* Very light background for readability */
+            color: var(--text-dark); /* Dark text for input */
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none; /* Remove default outline */
+            border-color: var(--accent-primary); /* Highlight border on focus */
+            box-shadow: 0 0 12px var(--accent-primary); /* Shadow on focus */
+        }
+
+        button {
+            background-color: var(--accent-primary); /* Primary accent color */
+            color: white; /* White text for contrast */
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase; /* Uppercase text */
+            letter-spacing: 1.5px; /* Spaced out text */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3); /* Button shadow */
+            padding: 1.3rem; /* Padding for buttons */
+        }
+
+        button:hover {
+            opacity: 0.9; /* Slight transparency on hover */
+            transform: translateY(-5px); /* Lift effect on hover */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); /* Larger shadow on hover */
+        }
+
+        /* --- List Styles --- */
+        ul {
+            list-style: none; /* Remove bullet points */
+            padding: 0;
+            flex-grow: 1; /* Allow lists to grow and fill space */
+            margin-bottom: 0;
+        }
+
+        li {
+            background: #fce4ec; /* Light pink background for list items */
+            margin-bottom: 1rem; /* Space between list items */
+            padding: 1.4rem; /* Internal padding */
+            border-radius: 18px; /* Rounded corners */
+            display: flex;
+            justify-content: space-between;
+            align-items: center; /* Vertically center content */
+            gap: 20px; /* Space between content and delete button */
+            word-break: break-word; /* Prevent long words from overflowing */
+            border: 1px solid #f8bbd0; /* Soft pink border */
+            transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover effects */
+        }
+
+        li.completed span {
+            text-decoration: line-through; /* Strikethrough for completed items */
+            opacity: 0.6;
+            color: var(--text-light); /* Lighter color for completed text */
+        }
+
+        li.important {
+            background-color: var(--accent-highlight); /* Highlight background for important items */
+            border-left: 8px solid var(--accent-primary); /* Thick accent border on the left */
+            box-shadow: 0 8px 18px rgba(255, 171, 145, 0.4); /* Stronger shadow for important items */
+        }
+
+        /* --- Calendar/Time Display --- */
+        .datetime-display {
+            width: 100%;
+            max-width: 1400px;
+            background-color: var(--accent-secondary);
+            color: var(--text-dark);
+            text-align: center;
+            padding: 1.8rem 1.5rem; /* Slightly smaller padding */
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2.5rem;
+            font-size: 1.5rem; /* Slightly smaller base font */
+            font-weight: 700;
+            font-style: italic;
+            border: 4px solid var(--color-success);
+            line-height: 1.4; /* Tighter line height */
+        }
+
+        #currentDate {
+            display: block;
+            margin-bottom: 0.2em; /* Space between date and time */
+            font-size: 2rem; /* Smaller than before */
+            font-weight: 800;
+            color: var(--text-dark);
+            font-family: var(--font-secondary);
+        }
+        #currentTime {
+            font-size: 2.8rem; /* Smaller than before */
+            display: block;
+            font-weight: 800;
+            color: var(--text-dark);
+            font-family: var(--font-secondary);
+        }
+        .datetime-display .emoji {
+            font-size: 1.2em; /* Ensure emojis are visible */
+            margin: 0 0.5em;
+        }
+
+
+        /* --- Delete Button Styling --- */
+        .delete-btn {
+            background: none; /* No background */
+            border: none; /* No border */
+            color: var(--color-danger); /* Danger color for delete icon */
+            font-size: 2.2rem; /* Large emoji size */
+            cursor: pointer;
+            padding: 10px;
+            min-width: 45px; /* Ensure a decent click target */
+            transition: transform 0.2s ease; /* Smooth transform on hover */
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.3) rotate(15deg); /* Larger and rotated on hover */
+        }
+
+        /* --- Budget Specifics --- */
+        .budget-entry {
+            display: grid;
+            grid-template-columns: 1fr auto auto; /* Description, Category, Amount */
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .budget-desc {
+            font-weight: 700;
+            font-size: 1.3em;
+            color: var(--text-dark);
+        }
+
+        .budget-category {
+            font-size: 1em;
+            background: var(--accent-highlight);
+            padding: 6px 12px;
+            border-radius: 12px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .budget-amount.income {
+            color: var(--color-success); /* Green for income */
+            font-weight: 800;
+            font-size: 1.2em;
+        }
+
+        .budget-amount.expense {
+            color: var(--color-danger); /* Red for expense */
+            font-weight: 800;
+            font-size: 1.2em;
+        }
+
+        .budget-totals {
+            margin-top: 2.5rem;
+            padding-top: 2.5rem;
+            border-top: 4px solid var(--accent-primary); /* Separator */
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+
+        /* Smaller font for Gained, Spent, Balance */
+        .total-value {
+            font-weight: 900;
+            display: block;
+            font-size: 1.3em; /* Further reduced font size */
+            margin-top: 8px; /* Slightly less margin */
+        }
+
+        #totalIncome {
+            color: var(--color-success);
+        }
+
+        #totalExpense {
+            color: var(--color-danger);
+        }
+
+        #finalBalance {
+            color: var(--text-dark);
+        }
+
+        /* --- Task Specifics --- */
+        .task-filters {
+            display: flex;
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap; /* Allow buttons to wrap */
+        }
+
+        .task-filters button {
+            width: auto;
+            flex-grow: 1; /* Allow buttons to grow to fill space */
+            background: #e8f5e9; /* Light background for filter buttons */
+            color: var(--text-dark);
+            border: 2px solid var(--text-light);
+            padding: 1rem 1.4rem;
+            font-size: 1.05rem;
+        }
+
+        .task-filters button.active {
+            background: var(--accent-secondary); /* Active filter button style */
+            color: var(--text-dark);
+            border-color: var(--accent-secondary);
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+        }
+
+        .task-item input[type="checkbox"] {
+            width: 28px;
+            height: 28px;
+            accent-color: var(--color-success);
+            border-radius: 6px;
+        }
+
+        .task-details {
+            font-size: 0.95em;
+            color: var(--text-light); /* Lighter color for details */
+            margin-top: 5px;
+            display: block; /* Ensures it's on a new line */
+        }
+
+        /* --- Notes Specifics --- */
+        .note-item {
+            flex-direction: column; /* Stack note title and content */
+            align-items: flex-start;
+        }
+
+        .note-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 1.4rem;
+            color: var(--text-dark);
+        }
+
+        .note-content {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+        }
+
+        /* --- Form Grouping --- */
+        .form-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .form-group.vertical {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 28px;
+            height: 28px;
+            margin: 0;
+            accent-color: var(--accent-primary);
+            border-radius: 6px;
+        }
+
+        .checkbox-group label {
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-size: 1.15rem;
+        }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjust min-width for smaller desktops/tablets */
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1.5rem; /* Reduce overall padding on small screens */
+            }
+
+            .main-title .dino-name {
+                font-size: 3.5rem; /* Smaller title on mobile */
+            }
+            .main-title .assistant-tagline {
+                font-size: 1.5rem;
+            }
+
+            h2 {
+                font-size: 2rem; /* Smaller section titles on mobile */
+            }
+
+            .section {
+                padding: 1.8rem; /* Reduce section padding */
+            }
+
+            .datetime-display {
+                font-size: 1.2rem; /* Smaller quote font */
+                padding: 1.5rem;
+            }
+
+            #currentDate {
+                font-size: 1.6rem; /* Smaller on mobile */
+            }
+            #currentTime {
+                font-size: 2.2rem; /* Smaller on mobile */
+            }
+
+            .budget-entry {
+                grid-template-columns: 1fr; /* Stack budget entries on small screens */
+            }
+
+            .budget-category {
+                grid-column: auto;
+                text-align: center;
+            }
+
+            body::before {
+                display: none; /* Hide large T-Rex background on small mobile screens */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1 class="main-title">
+    <span class="dino-name">🦖 DinoDesk 🌿</span>
+    <span class="assistant-tagline">(Your Dino Personal Assistant)</span>
+</h1>
+
+<!-- Calendar and Time Display -->
+<div class="datetime-display">
+    <span id="currentDate"><span class="emoji">📅</span></span>
+    <span id="currentTime"><span class="emoji">⏰</span></span>
+</div>
+
+<div class="main-container">
+    <!-- --- Task Management Module --- -->
+    <div class="section">
+        <h2>🌿 Task Jungle</h2>
+        <div class="form-group vertical">
+            <input type="text" id="taskInput" placeholder="Hunt for a new task... 🍖" />
+            <div class="form-group">
+                <input type="date" id="taskDate" />
+                <input type="time" id="taskTime" />
+            </div>
+            <select id="taskCategory" required>
+                <option value="">Select Category 🏷️</option>
+                <option value="Foraging">Foraging</option>
+                <option value="Territory">Territory Defense</option>
+                <option value="Nest">Nest Building</option>
+                <option value="Play">Playtime</option>
+                <option value="Other">Other Primal Duty</option>
+            </select>
+            <div class="checkbox-group">
+                <input type="checkbox" id="taskImportant" />
+                <label for="taskImportant">Alpha Task? 👑</label>
+            </div>
+            <button onclick="addTask()">Stomp on it! 🦖</button>
+        </div>
+        <div class="task-filters">
+            <button id="filterAll" class="active" onclick="filterTasks('all')">All Expeditions</button>
+            <button id="filterActive" onclick="filterTasks('active')">Still Roaming</button>
+            <button id="filterCompleted" onclick="filterTasks('completed')">Conquered! 🔥</button>
+        </div>
+        <ul id="taskList"></ul>
+    </div>
+
+    <!-- --- Budget Tracker Module --- -->
+    <div class="section">
+        <h2>💎 Dino Budget</h2>
+        <div class="form-group vertical">
+            <input type="text" id="budgetDesc" placeholder="What shiny fossil did you find? (e.g., Rare Amber)" />
+            <input type="text" id="budgetCategory" placeholder="Fortune Type (e.g., Foraging, Nest Building)" />
+            <div class="form-group">
+                <input type="number" id="budgetAmount" placeholder="Amount (e.g., 5.00 glimmering geodes)" />
+                <select id="budgetType">
+                    <option value="expense">Spent (Uh oh! 😩)</option>
+                    <option value="income">Gained! (Cha-ching! ✨)</option>
+                </select>
+            </div>
+            <button onclick="addBudget()">Unearth Fortune! ⛏️</button>
+        </div>
+        <ul id="budgetList"></ul>
+        <div class="budget-totals">
+            <div>Gained!<span id="totalIncome" class="total-value">$0.00</span></div>
+            <div>Spent!<span id="totalExpense" class="total-value">$0.00</span></div>
+            <div>Balance<span id="finalBalance" class="total-value">$0.00</span></div>
+        </div>
+    </div>
+
+    <!-- --- Notes Module --- -->
+    <div class="section">
+        <h2>📜 Dino Notes</h2>
+        <div class="form-group vertical">
+            <input type="text" id="noteTitle" placeholder="A scroll title... (e.g., Best digging spots)" />
+            <textarea id="noteContent" placeholder="Scribe your ancient wisdom here... ✍️" rows="6"></textarea>
+            <div class="checkbox-group">
+                <input type="checkbox" id="noteImportant" />
+                <label for="noteImportant">Legendary Lore? 🌟</label>
+            </div>
+            <button onclick="addNote()">Scribe Scroll! 📝</button>
+        </div>
+        <ul id="noteList"></ul>
+    </div>
+
+</div>
+
+<script>
+    // --- UTILITIES ---
+    // Loads data from localStorage, providing a fallback if nothing is found or an error occurs.
+    const load = (key, fallback = []) => {
+        try {
+            return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+        } catch (e) {
+            console.error(`Error loading ${key} from localStorage:`, e);
+            return fallback;
+        }
+    };
+
+    // Saves data to localStorage after converting it to a JSON string.
+    const save = (key, data) => {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+        catch (e) {
+            console.error(`Error saving ${key} to localStorage:`, e);
+        }
+    };
+
+    // Updates the budget totals displayed in the main Budget module.
+    const updateTotals = (income, expense) => {
+        document.getElementById("totalIncome").textContent = `$${income.toFixed(2)}`;
+        document.getElementById("totalExpense").textContent = `$${expense.toFixed(2)}`;
+        document.getElementById("finalBalance").textContent = `$${(income - expense).toFixed(2)}`;
+    };
+
+    // --- CALENDAR AND TIME DISPLAY ---
+    // Displays the current date and time, updating every second.
+    const updateDateTime = () => {
+        const now = new Date();
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+
+        document.getElementById("currentDate").innerHTML = `<span class="emoji">📅</span> ${now.toLocaleDateString('en-US', dateOptions)}`;
+        document.getElementById("currentTime").innerHTML = `<span class="emoji">⏰</span> ${now.toLocaleTimeString('en-US', timeOptions)}`;
+    };
+
+    // --- TASK MANAGEMENT MODULE ---
+    let tasks = load("tasks", []); // Load tasks from localStorage
+    let currentFilter = 'all'; // Default filter for tasks
+
+    // Renders the list of tasks.
+    const renderTasks = () => {
+        const list = document.getElementById("taskList");
+        // Filter and map tasks to HTML list items.
+        list.innerHTML = tasks
+            .filter(task => currentFilter === 'all' || (currentFilter === 'active' ? !task.isCompleted : task.isCompleted))
+            .map(task => `
+                <li class="${task.isCompleted ? 'completed' : ''} ${task.isImportant ? 'important' : ''}">
+                    <div class="task-item">
+                        <input type="checkbox" ${task.isCompleted ? 'checked' : ''} onchange="toggleTask(${task.id})">
+                        <div>
+                            <span>${task.text}</span>
+                            ${task.date || task.time || task.category ? `<span class="task-details">
+                                ${task.category ? `[${task.category}] ` : ''}
+                                ${task.date ? `${task.date.split('-').reverse().join('/')}` : ''}
+                                ${task.time ? ` at ${task.time}` : ''}
+                            </span>` : ''}
+                        </div>
+                    </div>
+                    <button class="delete-btn" onclick="removeTask(${task.id})">🦕</button>
+                </li>
+            `).join("") || `<li style="justify-content: center; color: var(--text-light);">The jungle is quiet. No tasks to hunt right now! 🦎</li>`;
+    };
+
+    // Adds a new task based on form inputs.
+    const addTask = () => {
+        const taskText = document.getElementById("taskInput").value.trim();
+        const taskDate = document.getElementById("taskDate").value;
+        const taskTime = document.getElementById("taskTime").value;
+        const taskCategory = document.getElementById("taskCategory").value; // Get category value
+
+        if (!taskText) return alert("Rawr! Please describe your hunt!");
+        if (!taskCategory) return alert("Don't forget to select a category for your task!");
+
+
+        tasks.push({
+            id: Date.now(), // Unique ID for the task
+            text: taskText,
+            isCompleted: false,
+            isImportant: document.getElementById("taskImportant").checked,
+            date: taskDate,
+            time: taskTime,
+            category: taskCategory // Store category
+        });
+        save("tasks", tasks); // Save updated tasks to localStorage
+        // Clear form fields
+        document.getElementById("taskInput").value = "";
+        document.getElementById("taskDate").value = "";
+        document.getElementById("taskTime").value = "";
+        document.getElementById("taskCategory").value = ""; // Clear category field
+        document.getElementById("taskImportant").checked = false;
+        renderTasks(); // Re-render tasks list
+    };
+
+    // Toggles the completion status of a task.
+    const toggleTask = id => {
+        const task = tasks.find(task => task.id === id);
+        if (task) {
+            task.isCompleted = !task.isCompleted;
+            save("tasks", tasks);
+            renderTasks();
+        }
+    };
+
+    // Removes a task from the list.
+    const removeTask = id => {
+        tasks = tasks.filter(task => task.id !== id);
+        save("tasks", tasks);
+        renderTasks();
+    };
+
+    // Filters tasks based on the selected filter (all, active, completed).
+    const filterTasks = filter => {
+        currentFilter = filter;
+        document.querySelectorAll('.task-filters button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`filter${filter.charAt(0).toUpperCase() + filter.slice(1)}`).classList.add('active');
+        renderTasks();
+    };
+
+
+    // --- BUDGET TRACKER MODULE ---
+    let budget = load("budget", []); // Load budget entries from localStorage
+
+    // Renders budget entries and updates totals.
+    const renderBudget = () => {
+        const list = document.getElementById("budgetList");
+        let totalIncome = 0, totalExpense = 0;
+
+        // Map budget entries to HTML list items and calculate totals.
+        list.innerHTML = budget.map((entry, i) => {
+            if (entry.type === 'income') totalIncome += entry.amount;
+            else totalExpense += entry.amount;
+
+            return `
+                <li>
+                    <div class="budget-entry">
+                        <span class="budget-desc">${entry.desc}</span>
+                        <span class="budget-category">${entry.category}</span>
+                        <span class="budget-amount ${entry.type}">
+                            ${entry.type === 'income' ? '+' : '-'}$${entry.amount.toFixed(2)}
+                        </span>
+                    </div>
+                    <button class="delete-btn" onclick="removeBudget(${i})">🦕</button>
+                </li>
+            `;
+        }).join("") || `<li style="justify-content: center; color: var(--text-light);">The fossil beds are empty. 🦴</li>`;
+
+        updateTotals(totalIncome, totalExpense); // Update overall totals.
+    };
+
+    // Adds a new budget entry.
+    const addBudget = () => {
+        const desc = document.getElementById("budgetDesc").value.trim();
+        const category = document.getElementById("budgetCategory").value.trim();
+        const amount = parseFloat(document.getElementById("budgetAmount").value);
+        const type = document.getElementById("budgetType").value;
+
+        if (!desc || !category || isNaN(amount) || amount <= 0) return alert("Grrr! Please describe your treasure!");
+
+        budget.push({ desc, category, amount, type });
+        save("budget", budget);
+        // Clear form fields
+        document.getElementById("budgetDesc").value = "";
+        document.getElementById("budgetCategory").value = "";
+        document.getElementById("budgetAmount").value = "";
+        renderBudget();
+    };
+
+    // Removes a budget entry.
+    const removeBudget = index => {
+        budget.splice(index, 1);
+        save("budget", budget);
+        renderBudget();
+    };
+
+    // --- NOTES MODULE ---
+    let notes = load("notes", []); // Load notes from localStorage
+
+    // Renders the list of notes.
+    const renderNotes = () => {
+        const list = document.getElementById("noteList");
+        list.innerHTML = notes.map((note, i) => `
+            <li class="note-item ${note.isImportant ? 'important' : ''}">
+                <div>
+                    <div class="note-title">${note.title}</div>
+                    <div class="note-content">${note.content.replace(/\n/g, '<br>')}</div>
+                </div>
+                <button class="delete-btn" onclick="removeNote(${i})">🦕</button>
+            </li>
+        `).join("") || `<li style="justify-content: center; color: var(--text-light);">No ancient wisdom recorded yet! 🎨</li>`;
+    };
+
+    // Adds a new note based on form inputs.
+    const addNote = () => {
+        const title = document.getElementById("noteTitle").value.trim();
+        const content = document.getElementById("noteContent").value.trim();
+
+        if (!title || !content) return alert("Don't forget both a scroll title and wisdom!");
+
+        notes.push({
+            id: Date.now(), // Unique ID for the note
+            title,
+            content,
+            isImportant: document.getElementById("noteImportant").checked
+        });
+        save("notes", notes); // Save updated notes to localStorage
+        // Clear form fields
+        document.getElementById("noteTitle").value = "";
+        document.getElementById("noteContent").value = "";
+        document.getElementById("noteImportant").checked = false;
+        renderNotes(); // Re-render notes list
+    };
+
+    // Removes a note from the list.
+    const removeNote = index => {
+        notes.splice(index, 1);
+        save("notes", notes);
+        renderNotes();
+    };
+
+    // --- INITIALIZE APP ---
+    // This function runs when the page loads, initializing all modules.
+    const initialize = () => {
+        updateDateTime(); // Display initial date and time
+        setInterval(updateDateTime, 1000); // Update time every second
+        renderTasks(); // Renders tasks
+        renderBudget(); // Renders budget
+        renderNotes(); // Renders notes
+    };
+
+    // Call initialize when the DOM is fully loaded.
+    document.addEventListener('DOMContentLoaded', initialize);
+</script>
+</body>
+</html>
