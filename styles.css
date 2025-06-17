@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦖 DinoDesk (Your Dino Personal Assistant) 🌿</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="scripts.js" defer></script>
+</head>
+<body>
+
+<h1 class="main-title">
+    <span class="dino-name">🦖 DinoDesk 🌿</span>
+    <span class="assistant-tagline">(Your Dino Personal Assistant)</span>
+</h1>
+
+<!-- Calendar and Time Display -->
+<div class="datetime-display">
+    <span id="currentDate"><span class="emoji">📅</span></span>
+    <span id="currentTime"><span class="emoji">⏰</span></span>
+</div>
+
+<div class="main-container">
+    <!-- --- Task Management Module --- -->
+    <div class="section">
+        <h2>🌿 Task Jungle</h2>
+        <div class="form-group vertical">
+            <input type="text" id="taskInput" class="cute-input" placeholder="Hunt for a new task... 🍖" />
+            <div class="form-group">
+                <input type="date" id="taskDate" class="cute-input" />
+                <input type="time" id="taskTime" class="cute-input" />
+            </div>
+            <select id="taskCategory" class="cute-select" required>
+                <option value="">Select Category 🏷️</option>
+                <option value="Foraging">Foraging</option>
+                <option value="Territory">Territory Defense</option>
+                <option value="Nest">Nest Building</option>
+                <option value="Play">Playtime</option>
+                <option value="Other">Other Primal Duty</option>
+            </select>
+            <div class="checkbox-group">
+                <input type="checkbox" id="taskImportant" />
+                <label for="taskImportant">Alpha Task? 👑</label>
+            </div>
+            <button class="cute-button" onclick="addTask()">Stomp on it! 🦖</button>
+        </div>
+        <div class="task-filters">
+            <button id="filterAll" class="active" onclick="filterTasks('all')">All Expeditions</button>
+            <button id="filterActive" onclick="filterTasks('active')">Still Roaming</button>
+            <button id="filterCompleted" onclick="filterTasks('completed')">Conquered! 🔥</button>
+        </div>
+        <ul id="taskList" class="cute-list"></ul>
+    </div>
+
+    <!-- --- Budget Tracker Module --- -->
+    <div class="section">
+        <h2>💎 Dino Budget</h2>
+        <div class="form-group vertical">
+            <input type="text" id="budgetDesc" class="cute-input" placeholder="What shiny fossil did you find? (e.g., Rare Amber)" />
+            <input type="text" id="budgetCategory" class="cute-input" placeholder="Fortune Type (e.g., Foraging, Nest Building)" />
+            <div class="form-group">
+                <input type="number" id="budgetAmount" class="cute-input" placeholder="Amount (e.g., 5.00 glimmering geodes)" />
+                <select id="budgetType" class="cute-select">
+                    <option value="expense">Spent (Uh oh! 😩)</option>
+                    <option value="income">Gained! (Cha-ching! ✨)</option>
+                </select>
+            </div>
+            <button class="cute-button" onclick="addBudget()">Unearth Fortune! ⛏️</button>
+        </div>
+        <ul id="budgetList" class="cute-list"></ul>
+        <div class="budget-totals">
+            <div>Gained!<span id="totalIncome" class="total-value">$0.00</span></div>
+            <div>Spent!<span id="totalExpense" class="total-value">$0.00</span></div>
+            <div>Balance<span id="finalBalance" class="total-value">$0.00</span></div>
+        </div>
+    </div>
+
+    <!-- --- Notes Module --- -->
+    <div class="section">
+        <h2>📜 Dino Notes</h2>
+        <div class="form-group vertical">
+            <input type="text" id="noteTitle" class="cute-input" placeholder="A scroll title... (e.g., Best digging spots)" />
+            <textarea id="noteContent" class="cute-textarea" placeholder="Scribe your ancient wisdom here... ✍️" rows="6"></textarea>
+            <div class="checkbox-group">
+                <input type="checkbox" id="noteImportant" />
+                <label for="noteImportant">Legendary Lore? 🌟</label>
+            </div>
+            <button class="cute-button" onclick="addNote()">Scribe Scroll! 📝</button>
+        </div>
+        <ul id="noteList" class="cute-list"></ul>
+    </div>
+
+</div>
+
+<script>
+    // --- UTILITIES ---
+    const load = (key, fallback = []) => {
+        try {
+            return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+        } catch (e) {
+            console.error(`Error loading ${key} from localStorage:`, e);
+            return fallback;
+        }
+    };
+
+    const save = (key, data) => {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+        catch (e) {
+            console.error(`Error saving ${key} to localStorage:`, e);
+        }
+    };
+
+    const updateTotals = (income, expense) => {
+        document.getElementById("totalIncome").textContent = `$${income.toFixed(2)}`;
+        document.getElementById("totalExpense").textContent = `$${expense.toFixed(2)}`;
+        document.getElementById("finalBalance").textContent = `$${(income - expense).toFixed(2)}`;
+    };
+
+    const updateDateTime = () => {
+        const now = new Date();
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+
+        document.getElementById("currentDate").innerHTML = `<span class="emoji">📅</span> ${now.toLocaleDateString('en-US', dateOptions)}`;
+        document.getElementById("currentTime").innerHTML = `<span class="emoji">⏰</span> ${now.toLocaleTimeString('en-US', timeOptions)}`;
+    };
+
+    let tasks = load("tasks", []);
+    let currentFilter = 'all';
+
+    const renderTasks = () => {
+        const list = document.getElementById("taskList");
+        list.innerHTML = tasks
+            .filter(task => currentFilter === 'all' || (currentFilter === 'active' ? !task.isCompleted : task.isCompleted))
+            .map(task => `
+                <li class="${task.isCompleted ? 'completed' : ''} ${task.isImportant ? 'important' : ''}">
+                </li>
+            `).join("") || `<li style="justify-content: center; color: var(--text-light);">The jungle is quiet. No tasks to hunt right now! 🦎</li>`;
+    };
+
+    const addTask = () => {
+        const taskText = document.getElementById("taskInput").value.trim();
+        const taskDate = document.getElementById("taskDate").value;
+        const taskTime = document.getElementById("taskTime").value;
+        const taskCategory = document.getElementById("taskCategory").value;
+
+        if (!taskText) return alert("Rawr! Please describe your hunt!");
+        if (!taskCategory) return alert("Don't forget to select a category for your task!");
+
+        tasks.push({
+            id: Date.now(),
+            text: taskText,
+            isCompleted: false,
+            isImportant: document.getElementById("taskImportant").checked,
+            date: taskDate,
+            time: taskTime,
+            category: taskCategory
+        });
+        save("tasks", tasks);
+        document.getElementById("taskInput").value = "";
+        document.getElementById("taskDate").value = "";
+        document.getElementById("taskTime").value = "";
+        document.getElementById("taskCategory").value = "";
+        document.getElementById("taskImportant").checked = false;
+        renderTasks();
+    };
+
+    const toggleTask = id => {
+        const task = tasks.find(task => task.id === id);
+        if (task) {
+            task.isCompleted = !task.isCompleted;
+            save("tasks", tasks);
+            renderTasks();
+        }
+    };
+
+    const removeTask = id => {
+        tasks = tasks.filter(task => task.id !== id);
+        save("tasks", tasks);
+        renderTasks();
+    };
+
+    const filterTasks = filter => {
+        currentFilter = filter;
+        document.querySelectorAll('.task-filters button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`filter${filter.charAt(0).toUpperCase() + filter.slice(1)}`).classList.add('active');
+    };
+
+    let budget = load("budget", []);
+
+    const renderBudget = () => {
+        const list = document.getElementById("budgetList");
+        let totalIncome = 0, totalExpense = 0;
+
+        list.innerHTML = budget.map((entry, i) => {
+            if (entry.type === 'income') totalIncome += entry.amount;
+            else totalExpense += entry.amount;
+
+            return `
+                <li>
+                    <div class="budget-entry">
+                        <span class="budget-desc">${entry.desc}</span>
+                        <span class="budget-category">${entry.category}</span>
+                        <span class="budget-amount ${entry.type}">
+                            ${entry.type === 'income' ? '+' : '-'}$${entry.amount.toFixed(2)}
+                        </span>
+                    </div>
+                    <button class="delete-btn" onclick="removeBudget(${i})">🦕</button>
+                </li>
+            `;
+        }).join("") || `<li style="justify-content: center; color: var(--text-light);">The fossil beds are empty. 🦴</li>`;
+
+        updateTotals(totalIncome, totalExpense);
+    };
+
+    const addBudget = () => {
+        const desc = document.getElementById("budgetDesc").value.trim();
+        const category = document.getElementById("budgetCategory").value.trim();
+        const amount = parseFloat(document.getElementById("budgetAmount").value);
+        const type = document.getElementById("budgetType").value;
+
+        if (!desc || !category || isNaN(amount) || amount <= 0) return alert("Grrr! Please describe your treasure!");
+
+        budget.push({ desc, category, amount, type });
+        save("budget", budget);
+        document.getElementById("budgetDesc").value = "";
+        document.getElementById("budgetCategory").value = "";
+        document.getElementById("budgetAmount").value = "";
+        renderBudget();
+    };
+
+    const removeBudget = index => {
+        budget.splice(index, 1);
+        save("budget", budget);
+        renderBudget();
+    };
+
+    let notes = load("notes", []);
+
+    const renderNotes = () => {
+        const list = document.getElementById("noteList");
+        list.innerHTML = notes.map((note, i) => `
+            <li class="note-item ${note.isImportant ? 'important' : ''}">
+                <div>
+                    <div class="note-title">${note.title}</div>
+                    <div class="note-content">${note.content.replace(/\n/g, '<br>')}</div>
+                </div>
+                <button class="delete-btn" onclick="removeNote(${i})">🦕</button>
+            </li>
+        `).join("") || `<li style="justify-content: center; color: var(--text-light);">No ancient wisdom recorded yet! 🎨</li>`;
+    };
+
+    const addNote = () => {
+        const title = document.getElementById("noteTitle").value.trim();
+        const content = document.getElementById("noteContent").value.trim();
+
+        if (!title || !content) return alert("Don't forget both a scroll title and wisdom!");
+
+        notes.push({
+            id: Date.now(),
+            title,
+            content,
+            isImportant: document.getElementById("noteImportant").checked
+        });
+        save("notes", notes);
+        document.getElementById("noteTitle").value = "";
+        document.getElementById("noteContent").value = "";
+        document.getElementById("noteImportant").checked = false;
+        renderNotes();
+    };
+
+    const removeNote = index => {
+        notes.splice(index, 1);
+        save("notes", notes);
+        renderNotes();
+    };
+
+    const initialize = () => {
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        renderTasks();
+        renderBudget();
+        renderNotes();
+    };
+
+    document.addEventListener('DOMContentLoaded', initialize);
+</script>
+</body>
+</html>
